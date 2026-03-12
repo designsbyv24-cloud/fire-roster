@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fire Evacuation Roster — IUIC London Security</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FF4500">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FireRoster">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fire: #FF4500;
+    --fire-dim: #CC3300;
+    --gold: #D4A017;
+    --cream: #F5F0E8;
+    --dark: #0F0F0F;
+    --panel: #1A1A1A;
+    --card: #242424;
+    --border: #333;
+    --text: #E8E0D0;
+    --muted: #888;
+    --green: #2ECC71;
+    --green-dim: #1a7a43;
+    --amber: #F39C12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--panel);
+    border-bottom: 3px solid var(--fire);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 12px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .fire-icon {
+    font-size: 28px;
+    animation: flicker 1.5s infinite alternate;
+  }
+
+  @keyframes flicker {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0.8; transform: scale(1.08); }
+  }
+
+  .header-title h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--fire);
+    line-height: 1;
+  }
+
+  .header-title p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  .shift-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .shift-tab {
+    padding: 7px 16px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+
+  .shift-tab:hover { border-color: var(--fire); color: var(--text); }
+  .shift-tab.active { background: var(--fire); border-color: var(--fire); color: white; }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn {
+    padding: 7px 14px;
+    border: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .btn-primary { background: var(--fire); color: white; }
+  .btn-primary:hover { background: var(--fire-dim); }
+  .btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* MAIN LAYOUT */
+  .app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* TEAM POOL */
+  .team-pool {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 16px;
+    overflow-y: auto;
+    max-height: calc(100vh - 65px);
+    position: sticky;
+    top: 65px;
+  }
+
+  .pool-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pool-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .member-chip {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    cursor: grab;
+    transition: all 0.15s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .member-chip:hover { border-color: var(--gold); transform: translateX(2px); }
+  .member-chip.dragging { opacity: 0.4; }
+  .member-chip.assigned { opacity: 0.35; border-style: dashed; cursor: default; }
+
+  .member-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .member-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .member-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ROSTER GRID */
+  .roster-area {
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .shift-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .shift-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--fire);
+  }
+
+  .shift-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: rgba(212,160,23,0.1);
+    border: 1px solid rgba(212,160,23,0.3);
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .coverage-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px 14px;
+    background: var(--card);
+    border-radius: 4px;
+    border-left: 3px solid var(--fire);
+  }
+
+  .coverage-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 100px;
+  }
+
+  .coverage-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .coverage-fill {
+    height: 100%;
+    background: var(--fire);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .coverage-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 600;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  /* ZONE SECTIONS */
+  .zone-section {
+    margin-bottom: 24px;
+  }
+
+  .zone-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .zone-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .positions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+  }
+
+  /* POSITION CARD */
+  .position-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.15s;
+  }
+
+  .position-card.drag-over {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold);
+  }
+
+  .position-header {
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .position-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .duty-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 3px 7px;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .duty-incident { background: rgba(255,69,0,0.2); color: var(--fire); border: 1px solid var(--fire); }
+  .duty-rollcall { background: rgba(212,160,23,0.2); color: var(--gold); border: 1px solid var(--gold); }
+  .duty-search { background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid var(--green); }
+  .duty-guide { background: rgba(52,152,219,0.2); color: #3498DB; border: 1px solid #3498DB; }
+  .duty-traffic { background: rgba(155,89,182,0.2); color: #9B59B6; border: 1px solid #9B59B6; }
+  .duty-door { background: rgba(230,126,34,0.2); color: #E67E22; border: 1px solid #E67E22; }
+  .duty-alert { background: rgba(231,76,60,0.2); color: #E74C3C; border: 1px solid #E74C3C; }
+  .duty-crowd { background: rgba(26,188,156,0.2); color: #1ABC9C; border: 1px solid #1ABC9C; }
+
+  .duty-desc {
+    font-size: 11px;
+    color: var(--muted);
+    padding: 8px 12px;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    font-style: italic;
+  }
+
+  .position-slot {
+    padding: 10px 12px;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+  }
+
+  .slot-empty {
+    border: 1.5px dashed var(--border);
+    border-radius: 4px;
+    flex: 1;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 36px;
+  }
+
+  .slot-empty:hover, .slot-empty.drag-over {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(212,160,23,0.05);
+  }
+
+  .slot-filled {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,69,0,0.08);
+    border: 1.5px solid rgba(255,69,0,0.3);
+    border-radius: 4px;
+    padding: 6px 10px;
+  }
+
+  .slot-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .slot-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .slot-remove {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+    transition: color 0.1s;
+    line-height: 1;
+  }
+
+  .slot-remove:hover { color: var(--fire); }
+
+  /* ROLE MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--panel);
+    border: 2px solid var(--fire);
+    border-radius: 8px;
+    max-width: 480px;
+    width: 100%;
+    padding: 24px;
+    animation: slideUp 0.2s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-fire {
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .modal-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: var(--fire);
+    text-align: center;
+  }
+
+  .modal-position {
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+
+  .modal-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  .modal-duty-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .modal-duty-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+    background: rgba(255,69,0,0.06);
+    border-left: 3px solid var(--fire);
+    padding: 12px 14px;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .modal-steps {
+    margin-top: 16px;
+  }
+
+  .modal-step {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .modal-step:last-child { border-bottom: none; }
+
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    color: var(--fire);
+    min-width: 20px;
+  }
+
+  .modal-close {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: var(--fire);
+    color: white;
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  .modal-close:hover { background: var(--fire-dim); }
+
+  /* PRINT MODAL */
+  .print-modal {
+    max-width: 800px;
+  }
+
+  .print-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+    margin: 16px 0;
+  }
+
+  .print-row {
+    background: var(--card);
+    border-radius: 4px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--fire);
+  }
+
+  .print-pos { font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+  .print-person { font-size: 14px; font-weight: 700; color: var(--text); margin: 2px 0; }
+  .print-duty { font-size: 11px; color: var(--gold); font-family: 'IBM Plex Mono', monospace; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--green-dim);
+    border: 1.5px solid var(--green);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 300;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 768px) {
+    .app { grid-template-columns: 1fr; }
+    .team-pool { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+    header { flex-wrap: wrap; }
+    .positions-grid { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    body { background: white; color: black; }
+    header, .team-pool { display: none; }
+    .position-card { border-color: #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<div id="installBanner" style="display:none;background:#1A1A1A;border-bottom:2px solid #FF4500;padding:10px 20px;align-items:center;justify-content:space-between;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#E8E0D0;">
+  <span>🔥 Install this app on your phone for quick access during emergencies</span>
+  <button id="installBtn" style="background:#FF4500;color:white;border:none;padding:7px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;border-radius:2px;">INSTALL APP</button>
+</div>
+
+<header>
+  <div class="header-left">
+    <div class="fire-icon">🔥</div>
+    <div class="header-title">
+      <h1>Fire Evacuation Roster</h1>
+      <p>SECURITY COMMAND — DRAG &amp; DROP ASSIGNMENT</p>
+    </div>
+  </div>
+  <div class="shift-tabs" id="shiftTabs"></div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="clearShift()">CLEAR SHIFT</button>
+    <button class="btn btn-primary" onclick="openPrintModal()">VIEW ROSTER</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="team-pool">
+    <div class="pool-title">TEAM MEMBERS</div>
+    <div class="pool-grid" id="teamPool"></div>
+  </aside>
+
+  <main class="roster-area">
+    <div class="shift-header">
+      <div class="shift-name" id="shiftDisplayName">OPENING SHIFT</div>
+      <div class="shift-time" id="shiftDisplayTime">08:00 – 11:00</div>
+    </div>
+    <div class="coverage-bar">
+      <div class="coverage-label">POSITIONS FILLED</div>
+      <div class="coverage-track"><div class="coverage-fill" id="coverageFill" style="width:0%"></div></div>
+      <div class="coverage-count" id="coverageCount">0 / 0</div>
+    </div>
+    <div id="rosterGrid"></div>
+  </main>
+</div>
+
+<!-- ROLE MODAL -->
+<div class="modal-overlay" id="roleModal">
+  <div class="modal">
+    <div class="modal-fire">🔥</div>
+    <div class="modal-name" id="modalName"></div>
+    <div class="modal-position" id="modalPosition"></div>
+    <div class="modal-divider"></div>
+    <div class="modal-duty-title">YOUR FIRE EVACUATION DUTY</div>
+    <div class="modal-duty-text" id="modalDuty"></div>
+    <div class="modal-steps" id="modalSteps"></div>
+    <button class="modal-close" onclick="closeModal()">UNDERSTOOD — CLOSE</button>
+  </div>
+</div>
+
+<!-- PRINT MODAL -->
+<div class="modal-overlay" id="printModal">
+  <div class="modal print-modal">
+    <div class="modal-name" id="printTitle">SHIFT ROSTER</div>
+    <div class="modal-position" id="printTime"></div>
+    <div class="print-grid" id="printGrid"></div>
+    <button class="modal-close" onclick="closePrintModal()">CLOSE</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================
+// DATA
+// =====================================================
+
+const TEAM = [
+  'Zuriel','Benaiah','Eber','Nathan Ben','Duel','Mishael','Mark','Ara',
+  'Alphaeus','Euen','Judea','Kassa','Joshua.M','Ithiel','Kal\'el',
+  'Ezekiel','James','Shemuel','Phineus','Alphius','Deuel'
+];
+
+const AVATAR_COLORS = [
+  '#C0392B','#8E44AD','#2980B9','#16A085','#D35400','#7F8C8D',
+  '#1ABC9C','#E74C3C','#9B59B6','#3498DB','#E67E22','#2ECC71',
+  '#E91E63','#795548','#607D8B','#F44336','#4CAF50','#FF5722',
+  '#9C27B0','#03A9F4','#FF9800'
+];
+
+const DUTY_TYPES = {
+  INCIDENT: { label: 'INCIDENT LEAD', cls: 'duty-incident' },
+  ROLLCALL: { label: 'ROLL CALL LEAD', cls: 'duty-rollcall' },
+  ALERT: { label: 'ALERT ROOMS', cls: 'duty-alert' },
+  SEARCH: { label: 'SEARCH & SWEEP', cls: 'duty-search' },
+  GUIDE: { label: 'GUIDE PEOPLE', cls: 'duty-guide' },
+  DOOR: { label: 'DOOR HOLDER', cls: 'duty-door' },
+  TRAFFIC: { label: 'TRAFFIC CONTROL', cls: 'duty-traffic' },
+  CROWD: { label: 'CROWD CONTROL', cls: 'duty-crowd' },
+};
+
+const ROLE_STEPS = {
+  INCIDENT: ['Sound the alarm immediately.','Call 999. Give building name, address & contact number.','Record time alarm was raised.','Liaise with Fire Service on arrival — you speak to them first.','Do not re-enter until Fire Service confirms safe.'],
+  ROLLCALL: ['Go STRAIGHT to the assembly point across the street.','Use the tablet to tick off every name on the register.','Report any missing persons to HOS (Zuriel) immediately.','Remain at assembly point until HOS says otherwise.'],
+  ALERT: ['Run immediately upstairs to the Kids Room, Prep Room & Nursing Room.','Shout clearly: "FIRE — LEAVE NOW."','Check no one is in the toilet areas upstairs.','Monitor cameras for stragglers if at SCB position.','Confirm all rooms clear to HOS via radio.'],
+  SEARCH: ['Search ALL rooms, corridors and toilets in your assigned zone.','Shout "FIRE — LEAVE NOW" in each room.','Close doors behind you — slows fire spread.','Report zone clear to HOS via radio.','Do NOT search if unsafe — exit immediately.'],
+  GUIDE: ['Stand at your assigned door or partition.','Use calm, firm instructions: "This way please — stay calm."','Keep people moving — no stopping.','Ensure all persons pass through before you exit.','Close door behind you.'],
+  DOOR: ['Go to your assigned fire door immediately.','Hold the door open throughout the full evacuation.','Do NOT leave this post until all persons have passed through.','Confirm area clear, then exit and close door.'],
+  TRAFFIC: ['Go directly to the road crossing outside.','Stop traffic from both directions.','Guide the congregation safely across to the assembly point.','Remain at crossing until everyone is across.'],
+  CROWD: ['Manage congestion at exits — keep people moving.','Prevent pushing — use assertive but calm language.','Assist elderly, wheelchair users and children to exit first.','Confirm area clear to HOS.'],
+};
+
+const POSITIONS = [
+  // Zone: Command
+  { zone: 'COMMAND', id: 'hos', title: 'HOS — Head of Security', duty: 'INCIDENT LEAD — Sound the alarm, call 999, record time, liaise with Fire Service on arrival', type: 'INCIDENT', default: 'Zuriel' },
+  { zone: 'COMMAND', id: 'ahos', title: 'AHOS — Asst. Head of Security', duty: 'ROLL CALL LEAD — Take tablet to assembly point, conduct headcount, report to HOS', type: 'ROLLCALL', default: 'Benaiah' },
+
+  // Zone: SCB
+  { zone: 'SCB ROOM', id: 'scb_camera', title: 'SCB Camera Operator', duty: 'ALERT FIRE / KIDS ROOM — Alert upstairs rooms, monitor cameras for stragglers', type: 'ALERT', default: 'Eber' },
+  { zone: 'SCB ROOM', id: 'scb_admin', title: 'SCB Admin / Radio', duty: 'ALERT FIRE / KIDS ROOM — Assist camera operator, relay messages via radio', type: 'ALERT', default: 'Nathan Ben' },
+
+  // Zone: Black Door
+  { zone: 'BLACK DOOR', id: 'bd_overseer', title: 'Black Door Overseer', duty: 'GUIDE congregation via Main Hall exit — direct people to assembly point across street', type: 'GUIDE', default: 'Duel' },
+  { zone: 'BLACK DOOR', id: 'bd_register', title: 'Black Door Register', duty: 'SEARCH & SWEEP — Check Black Door zone, corridors, and report area clear', type: 'SEARCH', default: 'Mishael' },
+
+  // Zone: Search
+  { zone: 'SEARCH TEAM', id: 'search1', title: 'Search Officer (Partition)', duty: 'DIRECTS PARTITION — Guide people through partition door, ensure calm orderly flow', type: 'GUIDE', default: 'Mark' },
+  { zone: 'SEARCH TEAM', id: 'search2', title: 'Search Officer (Families)', duty: 'DIRECTS FAMILY TO BD — Guide families and children to Black Door exit safely', type: 'GUIDE', default: 'Ara' },
+
+  // Zone: White Door
+  { zone: 'WHITE DOOR', id: 'wd_overseer', title: 'White Door Overseer', duty: 'WHITE DOOR HOLDER — Control White Door exit, guide congregation out, sweep zone', type: 'DOOR', default: 'Alphaeus' },
+  { zone: 'WHITE DOOR', id: 'wd_post1', title: 'White Door Post 1 (Upstairs)', duty: 'KIDS ROOM / PREP ROOM — Clear kids room and prep room, assist vulnerable persons', type: 'ALERT', default: 'Euen' },
+
+  // Zone: Main Hall
+  { zone: 'MAIN HALL', id: 'mh_overseer', title: 'Main Hall Overseer', duty: 'MAIN HALL OVERSEER — Manage evacuation flow from main hall, ensure all seats cleared', type: 'CROWD', default: 'Judea' },
+  { zone: 'MAIN HALL', id: 'mh_post1', title: 'Main Hall Post 1', duty: '2ND FIRE DOOR HOLDER — Hold fire door open, guide people through, confirm area clear', type: 'DOOR', default: 'Kassa' },
+  { zone: 'MAIN HALL', id: 'mh_post2', title: 'Main Hall Post 2', duty: '1ST FIRE DOOR HOLDER — Open and hold first fire door throughout evacuation', type: 'DOOR', default: '' },
+  { zone: 'MAIN HALL', id: 'mh_post3', title: 'Main Hall Post 3 (Assist)', duty: 'ASSIST OVERSEER — Support main hall overseer, guide overflow areas', type: 'CROWD', default: '' },
+
+  // Zone: External
+  { zone: 'EXTERNAL', id: 'traffic', title: 'Traffic / Witness Control', duty: 'TRAFFIC CONTROL — Manage road crossing, guide congregation to assembly point safely', type: 'TRAFFIC', default: 'Joshua.M' },
+  { zone: 'EXTERNAL', id: 'fire_escape', title: 'Fire Escape (Brown Door)', duty: 'OPEN FIRE ESCAPE DOOR — Open brown escape door, guide occupants out and to street', type: 'DOOR', default: 'Ithiel' },
+];
+
+const SHIFTS = [
+  { id: 'opening', name: 'OPENING', time: '08:00 – 11:00' },
+  { id: 'morning', name: 'MORNING', time: '11:00 – 15:00' },
+  { id: 'afternoon', name: 'AFTERNOON', time: '15:00 – 19:00' },
+  { id: 'evening', name: 'EVENING', time: '19:00 – 23:00' },
+];
+
+// =====================================================
+// STATE
+// =====================================================
+let currentShift = 'opening';
+let assignments = {}; // { shiftId: { positionId: memberName } }
+let dragSource = null;
+
+SHIFTS.forEach(s => { assignments[s.id] = {}; });
+
+// Prefill with defaults
+POSITIONS.forEach(pos => {
+  if (pos.default) {
+    SHIFTS.forEach(s => { assignments[s.id][pos.id] = pos.default; });
+  }
+});
+
+// =====================================================
+// HELPERS
+// =====================================================
+function getAvatarColor(name) {
+  let hash = 0;
+  for (let c of name) hash = c.charCodeAt(0) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function initials(name) {
+  return name.split(/[\s.]+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function getDutyType(type) {
+  return DUTY_TYPES[type] || { label: 'DUTY', cls: 'duty-guide' };
+}
+
+function getAssigned(posId) {
+  return assignments[currentShift][posId] || null;
+}
+
+function setAssigned(posId, name) {
+  // Remove from any other position in this shift
+  Object.keys(assignments[currentShift]).forEach(k => {
+    if (assignments[currentShift][k] === name) delete assignments[currentShift][k];
+  });
+  assignments[currentShift][posId] = name;
+}
+
+function removeAssigned(posId) {
+  delete assignments[currentShift][posId];
+}
+
+function isAssigned(name) {
+  return Object.values(assignments[currentShift]).includes(name);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// =====================================================
+// RENDER
+// =====================================================
+function renderShiftTabs() {
+  const el = document.getElementById('shiftTabs');
+  el.innerHTML = SHIFTS.map(s => `
+    <button class="shift-tab ${s.id === currentShift ? 'active' : ''}" onclick="switchShift('${s.id}')">
+      ${s.name}
+    </button>
+  `).join('');
+}
+
+function renderTeamPool() {
+  const el = document.getElementById('teamPool');
+  el.innerHTML = TEAM.map(name => {
+    const assigned = isAssigned(name);
+    const color = getAvatarColor(name);
+    return `
+      <div class="member-chip ${assigned ? 'assigned' : ''}" 
+           draggable="${!assigned}" 
+           data-name="${name}"
+           ondragstart="onDragStart(event, '${name}')"
+           title="${assigned ? 'Already assigned this shift' : 'Drag to assign'}">
+        <div class="member-avatar" style="background:${color}">${initials(name)}</div>
+        <div>
+          <div class="member-name">${name}</div>
+          <div class="member-count">${assigned ? '✓ ASSIGNED' : 'AVAILABLE'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderRoster() {
+  const shift = SHIFTS.find(s => s.id === currentShift);
+  document.getElementById('shiftDisplayName').textContent = shift.name + ' SHIFT';
+  document.getElementById('shiftDisplayTime').textContent = shift.time;
+
+  const filled = Object.keys(assignments[currentShift]).length;
+  const total = POSITIONS.length;
+  const pct = Math.round((filled / total) * 100);
+  document.getElementById('coverageFill').style.width = pct + '%';
+  document.getElementById('coverageCount').textContent = `${filled} / ${total}`;
+
+  const zones = [...new Set(POSITIONS.map(p => p.zone))];
+  const grid = document.getElementById('rosterGrid');
+
+  grid.innerHTML = zones.map(zone => {
+    const zonePosts = POSITIONS.filter(p => p.zone === zone);
+    return `
+      <div class="zone-section">
+        <div class="zone-label">${zone}</div>
+        <div class="positions-grid">
+          ${zonePosts.map(pos => renderPositionCard(pos)).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Attach drag events
+  document.querySelectorAll('.slot-empty, .slot-filled').forEach(el => {
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
+    el.addEventListener('dragleave', e => el.classList.remove('drag-over'));
+    el.addEventListener('drop', e => onDrop(e, el.closest('.position-card').dataset.posid));
+  });
+}
+
+function renderPositionCard(pos) {
+  const assigned = getAssigned(pos.id);
+  const duty = getDutyType(pos.type);
+
+  const slotContent = assigned ? `
+    <div class="slot-filled">
+      <div class="slot-avatar" style="background:${getAvatarColor(assigned)}">${initials(assigned)}</div>
+      <div class="slot-name">${assigned}</div>
+      <button class="slot-remove" onclick="removeAndRefresh('${pos.id}')" title="Remove">×</button>
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:10px;margin-left:4px;" onclick="openRoleModal('${assigned}','${pos.id}')">DUTY</button>
+    </div>
+  ` : `
+    <div class="slot-empty" onclick="openAssignModal('${pos.id}')">
+      + ASSIGN PERSON
+    </div>
+  `;
+
+  return `
+    <div class="position-card" data-posid="${pos.id}" 
+         ondragover="event.preventDefault(); this.classList.add('drag-over')"
+         ondragleave="this.classList.remove('drag-over')"
+         ondrop="onDrop(event, '${pos.id}')">
+      <div class="position-header">
+        <div class="position-title">${pos.title}</div>
+        <div class="duty-badge ${duty.cls}">${duty.label}</div>
+      </div>
+      <div class="duty-desc">${pos.duty}</div>
+      <div class="position-slot">${slotContent}</div>
+    </div>
+  `;
+}
+
+// =====================================================
+// INTERACTIONS
+// =====================================================
+function switchShift(id) {
+  currentShift = id;
+  renderAll();
+}
+
+function renderAll() {
+  renderShiftTabs();
+  renderTeamPool();
+  renderRoster();
+}
+
+function removeAndRefresh(posId) {
+  removeAssigned(posId);
+  renderAll();
+  showToast('Person removed from position.');
+}
+
+function clearShift() {
+  if (confirm('Clear all assignments for this shift?')) {
+    assignments[currentShift] = {};
+    renderAll();
+    showToast('Shift cleared.');
+  }
+}
+
+// Drag & drop
+function onDragStart(e, name) {
+  dragSource = name;
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onDrop(e, posId) {
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  if (!dragSource) return;
+  setAssigned(posId, dragSource);
+  dragSource = null;
+  renderAll();
+  showToast(`Assigned successfully.`);
+}
+
+// Click to assign (fallback / quick assign)
+function openAssignModal(posId) {
+  // Show unassigned team members as a quick pick
+  const available = TEAM.filter(n => !isAssigned(n));
+  if (available.length === 0) { showToast('All team members are assigned.'); return; }
+  const pos = POSITIONS.find(p => p.id === posId);
+  const name = prompt(`Assign to "${pos.title}".\n\nAvailable: ${available.join(', ')}\n\nType name:`);
+  if (name && TEAM.find(n => n.toLowerCase() === name.toLowerCase())) {
+    const matched = TEAM.find(n => n.toLowerCase() === name.toLowerCase());
+    setAssigned(posId, matched);
+    renderAll();
+    showToast(`${matched} assigned.`);
+  } else if (name) {
+    showToast('Name not found. Check spelling.');
+  }
+}
+
+// Role modal
+function openRoleModal(name, posId) {
+  const pos = POSITIONS.find(p => p.id === posId);
+  const steps = ROLE_STEPS[pos.type] || [];
+  document.getElementById('modalName').textContent = name.toUpperCase();
+  document.getElementById('modalPosition').textContent = pos.title + ' — ' + SHIFTS.find(s => s.id === currentShift).name + ' SHIFT';
+  document.getElementById('modalDuty').textContent = pos.duty;
+  document.getElementById('modalSteps').innerHTML = steps.length ? `
+    <div class="modal-duty-title" style="margin-top:16px">STEP BY STEP — WHAT YOU DO</div>
+    ${steps.map((s, i) => `<div class="modal-step"><span class="step-num">${i+1}.</span><span>${s}</span></div>`).join('')}
+  ` : '';
+  document.getElementById('roleModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('roleModal').classList.remove('open');
+}
+
+// Print modal
+function openPrintModal() {
+  const shift = SHIFTS.find(s => s.id === currentShift);
+  document.getElementById('printTitle').textContent = shift.name + ' SHIFT ROSTER';
+  document.getElementById('printTime').textContent = shift.time;
+  const grid = document.getElementById('printGrid');
+  grid.innerHTML = POSITIONS.map(pos => {
+    const assigned = getAssigned(pos.id) || '— UNASSIGNED —';
+    const duty = getDutyType(pos.type);
+    return `
+      <div class="print-row">
+        <div class="print-pos">${pos.zone} · ${pos.title}</div>
+        <div class="print-person">${assigned}</div>
+        <div class="print-duty">${duty.label}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('printModal').classList.add('open');
+}
+
+function closePrintModal() {
+  document.getElementById('printModal').classList.remove('open');
+}
+
+// Close modals on overlay click
+document.getElementById('roleModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('printModal').addEventListener('click', function(e) {
+  if (e.target === this) closePrintModal();
+});
+
+// =====================================================
+// INIT
+// =====================================================
+renderAll();
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// PWA install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.style.display = 'flex';
+});
+document.getElementById('installBtn') && document.getElementById('installBtn').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById('installBanner').style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>
