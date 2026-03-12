@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fire Evacuation Roster — IUIC London Security</title>
+<title>Fire Evacuation Roster</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#FF4500">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,850 +11,555 @@
 <meta name="apple-mobile-web-app-title" content="FireRoster">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --fire: #FF4500;
-    --fire-dim: #CC3300;
-    --gold: #D4A017;
-    --cream: #F5F0E8;
-    --dark: #0F0F0F;
-    --panel: #1A1A1A;
-    --card: #242424;
-    --border: #333;
-    --text: #E8E0D0;
-    --muted: #888;
-    --green: #2ECC71;
-    --green-dim: #1a7a43;
-    --amber: #F39C12;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--dark);
-    color: var(--text);
-    font-family: 'IBM Plex Sans', sans-serif;
-    min-height: 100vh;
-  }
-
-  /* HEADER */
-  header {
-    background: var(--panel);
-    border-bottom: 3px solid var(--fire);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    gap: 12px;
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .fire-icon {
-    font-size: 28px;
-    animation: flicker 1.5s infinite alternate;
-  }
-
-  @keyframes flicker {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0.8; transform: scale(1.08); }
-  }
-
-  .header-title h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 2px;
-    color: var(--fire);
-    line-height: 1;
-  }
-
-  .header-title p {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    margin-top: 2px;
-  }
-
-  .shift-tabs {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .shift-tab {
-    padding: 7px 16px;
-    border: 1.5px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.15s;
-    border-radius: 2px;
-  }
-
-  .shift-tab:hover { border-color: var(--fire); color: var(--text); }
-  .shift-tab.active { background: var(--fire); border-color: var(--fire); color: white; }
-
-  .header-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .btn {
-    padding: 7px 14px;
-    border: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.15s;
-  }
-
-  .btn-primary { background: var(--fire); color: white; }
-  .btn-primary:hover { background: var(--fire-dim); }
-  .btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
-  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
-
-  /* MAIN LAYOUT */
-  .app {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 0;
-    min-height: calc(100vh - 65px);
-  }
-
-  /* TEAM POOL */
-  .team-pool {
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-    padding: 16px;
-    overflow-y: auto;
-    max-height: calc(100vh - 65px);
-    position: sticky;
-    top: 65px;
-  }
-
-  .pool-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 14px;
-    letter-spacing: 2px;
-    color: var(--gold);
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .pool-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .member-chip {
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 4px;
-    padding: 8px 10px;
-    cursor: grab;
-    transition: all 0.15s;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .member-chip:hover { border-color: var(--gold); transform: translateX(2px); }
-  .member-chip.dragging { opacity: 0.4; }
-  .member-chip.assigned { opacity: 0.35; border-style: dashed; cursor: default; }
-
-  .member-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    color: white;
-    flex-shrink: 0;
-  }
-
-  .member-name {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .member-count {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  /* ROSTER GRID */
-  .roster-area {
-    padding: 20px;
-    overflow-y: auto;
-  }
-
-  .shift-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .shift-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
-    color: var(--fire);
-  }
-
-  .shift-time {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--gold);
-    background: rgba(212,160,23,0.1);
-    border: 1px solid rgba(212,160,23,0.3);
-    padding: 4px 10px;
-    border-radius: 2px;
-  }
-
-  .coverage-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding: 10px 14px;
-    background: var(--card);
-    border-radius: 4px;
-    border-left: 3px solid var(--fire);
-  }
-
-  .coverage-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    min-width: 100px;
-  }
-
-  .coverage-track {
-    flex: 1;
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .coverage-fill {
-    height: 100%;
-    background: var(--fire);
-    border-radius: 3px;
-    transition: width 0.4s ease;
-  }
-
-  .coverage-count {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--text);
-    font-weight: 600;
-    min-width: 50px;
-    text-align: right;
-  }
-
-  /* ZONE SECTIONS */
-  .zone-section {
-    margin-bottom: 24px;
-  }
-
-  .zone-label {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .zone-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .positions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 10px;
-  }
-
-  /* POSITION CARD */
-  .position-card {
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-    transition: all 0.15s;
-  }
-
-  .position-card.drag-over {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 1px var(--gold);
-  }
-
-  .position-header {
-    padding: 10px 12px 8px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .position-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.3;
-  }
-
-  .duty-badge {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    padding: 3px 7px;
-    border-radius: 2px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .duty-incident { background: rgba(255,69,0,0.2); color: var(--fire); border: 1px solid var(--fire); }
-  .duty-rollcall { background: rgba(212,160,23,0.2); color: var(--gold); border: 1px solid var(--gold); }
-  .duty-search { background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid var(--green); }
-  .duty-guide { background: rgba(52,152,219,0.2); color: #3498DB; border: 1px solid #3498DB; }
-  .duty-traffic { background: rgba(155,89,182,0.2); color: #9B59B6; border: 1px solid #9B59B6; }
-  .duty-door { background: rgba(230,126,34,0.2); color: #E67E22; border: 1px solid #E67E22; }
-  .duty-alert { background: rgba(231,76,60,0.2); color: #E74C3C; border: 1px solid #E74C3C; }
-  .duty-crowd { background: rgba(26,188,156,0.2); color: #1ABC9C; border: 1px solid #1ABC9C; }
-
-  .duty-desc {
-    font-size: 11px;
-    color: var(--muted);
-    padding: 8px 12px;
-    line-height: 1.5;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,0.02);
-    font-style: italic;
-  }
-
-  .position-slot {
-    padding: 10px 12px;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-  }
-
-  .slot-empty {
-    border: 1.5px dashed var(--border);
-    border-radius: 4px;
-    flex: 1;
-    padding: 8px 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    color: var(--muted);
-    font-size: 11px;
-    font-family: 'IBM Plex Mono', monospace;
-    cursor: pointer;
-    transition: all 0.15s;
-    min-height: 36px;
-  }
-
-  .slot-empty:hover, .slot-empty.drag-over {
-    border-color: var(--gold);
-    color: var(--gold);
-    background: rgba(212,160,23,0.05);
-  }
-
-  .slot-filled {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255,69,0,0.08);
-    border: 1.5px solid rgba(255,69,0,0.3);
-    border-radius: 4px;
-    padding: 6px 10px;
-  }
-
-  .slot-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    color: white;
-    flex-shrink: 0;
-  }
-
-  .slot-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    flex: 1;
-  }
-
-  .slot-remove {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 0 2px;
-    transition: color 0.1s;
-    line-height: 1;
-  }
-
-  .slot-remove:hover { color: var(--fire); }
-
-  /* ROLE MODAL */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--panel);
-    border: 2px solid var(--fire);
-    border-radius: 8px;
-    max-width: 480px;
-    width: 100%;
-    padding: 24px;
-    animation: slideUp 0.2s ease;
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .modal-fire {
-    font-size: 36px;
-    text-align: center;
-    margin-bottom: 12px;
-  }
-
-  .modal-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 32px;
-    letter-spacing: 3px;
-    color: var(--fire);
-    text-align: center;
-  }
-
-  .modal-position {
-    text-align: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--gold);
-    margin-top: 4px;
-  }
-
-  .modal-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 16px 0;
-  }
-
-  .modal-duty-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
-    letter-spacing: 2px;
-    color: var(--text);
-    margin-bottom: 8px;
-  }
-
-  .modal-duty-text {
-    font-size: 13px;
-    color: var(--text);
-    line-height: 1.7;
-    background: rgba(255,69,0,0.06);
-    border-left: 3px solid var(--fire);
-    padding: 12px 14px;
-    border-radius: 0 4px 4px 0;
-  }
-
-  .modal-steps {
-    margin-top: 16px;
-  }
-
-  .modal-step {
-    display: flex;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-  }
-
-  .modal-step:last-child { border-bottom: none; }
-
-  .step-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 700;
-    color: var(--fire);
-    min-width: 20px;
-  }
-
-  .modal-close {
-    margin-top: 20px;
-    width: 100%;
-    padding: 12px;
-    background: var(--fire);
-    color: white;
-    border: none;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
-    letter-spacing: 2px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background 0.15s;
-  }
-
-  .modal-close:hover { background: var(--fire-dim); }
-
-  /* PRINT MODAL */
-  .print-modal {
-    max-width: 800px;
-  }
-
-  .print-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    max-height: 60vh;
-    overflow-y: auto;
-    margin: 16px 0;
-  }
-
-  .print-row {
-    background: var(--card);
-    border-radius: 4px;
-    padding: 10px 12px;
-    border-left: 3px solid var(--fire);
-  }
-
-  .print-pos { font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
-  .print-person { font-size: 14px; font-weight: 700; color: var(--text); margin: 2px 0; }
-  .print-duty { font-size: 11px; color: var(--gold); font-family: 'IBM Plex Mono', monospace; }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--green-dim);
-    border: 1.5px solid var(--green);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    font-weight: 600;
-    z-index: 300;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s;
-  }
-
-  .toast.show { transform: translateY(0); opacity: 1; }
-
-  @media (max-width: 768px) {
-    .app { grid-template-columns: 1fr; }
-    .team-pool { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
-    header { flex-wrap: wrap; }
-    .positions-grid { grid-template-columns: 1fr; }
-  }
-
-  @media print {
-    body { background: white; color: black; }
-    header, .team-pool { display: none; }
-    .position-card { border-color: #ccc; }
-  }
+:root {
+  --fire: #FF4500; --fire-dim: #CC3300; --gold: #D4A017;
+  --dark: #0F0F0F; --panel: #1A1A1A; --card: #242424;
+  --border: #333; --text: #E8E0D0; --muted: #777;
+  --green: #2ECC71; --green-dim: #1a7a43;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--dark); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; min-height: 100vh; }
+
+/* INSTALL BANNER */
+#installBanner {
+  display: none; background: var(--fire); padding: 10px 16px;
+  align-items: center; justify-content: space-between; gap: 10px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: white;
+}
+#installBtn {
+  background: white; color: var(--fire); border: none; padding: 6px 14px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700;
+  cursor: pointer; border-radius: 2px; white-space: nowrap;
+}
+
+/* LOGIN SCREEN */
+#loginScreen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: var(--dark);
+}
+.login-box {
+  background: var(--panel); border: 2px solid var(--fire); border-radius: 8px;
+  padding: 36px 28px; max-width: 380px; width: 100%; text-align: center;
+}
+.login-fire { font-size: 48px; margin-bottom: 12px; animation: flicker 1.5s infinite alternate; }
+@keyframes flicker { 0%{opacity:1;transform:scale(1)} 100%{opacity:.8;transform:scale(1.06)} }
+.login-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--fire); }
+.login-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 28px; margin-top: 4px; }
+.login-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); text-align: left; margin-bottom: 6px; letter-spacing: 1px; }
+.login-input {
+  width: 100%; background: var(--card); border: 1.5px solid var(--border);
+  color: var(--text); padding: 12px 14px; font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px; border-radius: 4px; margin-bottom: 14px; outline: none;
+  transition: border-color 0.15s;
+}
+.login-input:focus { border-color: var(--fire); }
+.login-btn {
+  width: 100%; padding: 13px; background: var(--fire); color: white; border: none;
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+  cursor: pointer; border-radius: 4px; transition: background 0.15s; margin-bottom: 10px;
+}
+.login-btn:hover { background: var(--fire-dim); }
+.login-toggle { font-size: 12px; color: var(--muted); cursor: pointer; text-decoration: underline; font-family: 'IBM Plex Mono', monospace; }
+.login-toggle:hover { color: var(--gold); }
+.login-error { color: var(--fire); font-size: 12px; font-family: 'IBM Plex Mono', monospace; margin-top: 8px; min-height: 18px; }
+.login-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.login-verse { font-size: 11px; color: var(--muted); font-style: italic; line-height: 1.6; }
+
+/* HEADER */
+header {
+  background: var(--panel); border-bottom: 3px solid var(--fire); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100; gap: 10px; flex-wrap: wrap;
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-fire { font-size: 22px; animation: flicker 1.5s infinite alternate; }
+.header-title h1 { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; color: var(--fire); line-height: 1; }
+.header-title p { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+.shift-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.shift-tab {
+  padding: 6px 12px; border: 1.5px solid var(--border); background: transparent;
+  color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; border-radius: 2px;
+}
+.shift-tab:hover { border-color: var(--fire); color: var(--text); }
+.shift-tab.active { background: var(--fire); border-color: var(--fire); color: white; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.user-badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 5px 10px;
+  border-radius: 2px; border: 1.5px solid var(--border); color: var(--text);
+}
+.user-badge.lead { border-color: var(--gold); color: var(--gold); }
+.btn { padding: 6px 12px; border: none; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 1px; cursor: pointer; border-radius: 2px; transition: all 0.15s; }
+.btn-fire { background: var(--fire); color: white; }
+.btn-fire:hover { background: var(--fire-dim); }
+.btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--muted); }
+.btn-ghost:hover { border-color: var(--fire); color: var(--text); }
+
+/* SYNC STATUS */
+.sync-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; margin-right: 5px;
+}
+.sync-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+.sync-dot.saving { background: var(--gold); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* MY DUTY BANNER (viewer) */
+#myDutyBanner {
+  display: none; background: rgba(255,69,0,0.1); border-bottom: 2px solid var(--fire);
+  padding: 14px 16px;
+}
+.my-duty-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--fire); letter-spacing: 1px; margin-bottom: 4px; }
+.my-duty-position { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--text); }
+.my-duty-desc { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.my-duty-none { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); }
+
+/* MAIN LAYOUT */
+.app { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 60px); }
+
+/* TEAM POOL (lead only) */
+#teamPool {
+  background: var(--panel); border-right: 1px solid var(--border); padding: 14px;
+  overflow-y: auto; position: sticky; top: 60px; max-height: calc(100vh - 60px);
+}
+.pool-title { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--gold); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.member-chip {
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 4px;
+  padding: 7px 9px; cursor: grab; transition: all 0.15s; user-select: none;
+  display: flex; align-items: center; gap: 7px; margin-bottom: 5px;
+}
+.member-chip:hover { border-color: var(--gold); }
+.member-chip.assigned { opacity: 0.3; border-style: dashed; cursor: default; }
+.member-avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 700; color: white; flex-shrink: 0; }
+.member-name { font-size: 11px; font-weight: 600; }
+.member-status { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); }
+
+/* ROSTER AREA */
+.roster-area { padding: 16px; overflow-y: auto; }
+.roster-area.full-width { grid-column: 1 / -1; }
+
+.shift-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.shift-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 3px; color: var(--fire); }
+.shift-time { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--gold); background: rgba(212,160,23,0.1); border: 1px solid rgba(212,160,23,0.3); padding: 3px 8px; border-radius: 2px; }
+
+.coverage-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 9px 12px; background: var(--card); border-radius: 4px; border-left: 3px solid var(--fire); }
+.coverage-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); min-width: 90px; }
+.coverage-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.coverage-fill { height: 100%; background: var(--fire); border-radius: 3px; transition: width 0.4s; }
+.coverage-count { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text); font-weight: 600; min-width: 40px; text-align: right; }
+
+/* ZONE */
+.zone-section { margin-bottom: 20px; }
+.zone-label { font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.zone-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.positions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+
+/* POSITION CARD */
+.position-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 6px; overflow: hidden; transition: all 0.15s; }
+.position-card.mine { border-color: var(--fire); box-shadow: 0 0 0 1px rgba(255,69,0,0.3); }
+.position-card.drag-over { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.position-header { padding: 9px 11px 7px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.position-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.duty-badge { font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 600; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
+.duty-INCIDENT { background: rgba(255,69,0,0.2); color: var(--fire); border: 1px solid var(--fire); }
+.duty-ROLLCALL { background: rgba(212,160,23,0.2); color: var(--gold); border: 1px solid var(--gold); }
+.duty-SEARCH { background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid var(--green); }
+.duty-GUIDE { background: rgba(52,152,219,0.2); color: #3498DB; border: 1px solid #3498DB; }
+.duty-TRAFFIC { background: rgba(155,89,182,0.2); color: #9B59B6; border: 1px solid #9B59B6; }
+.duty-DOOR { background: rgba(230,126,34,0.2); color: #E67E22; border: 1px solid #E67E22; }
+.duty-ALERT { background: rgba(231,76,60,0.2); color: #E74C3C; border: 1px solid #E74C3C; }
+.duty-CROWD { background: rgba(26,188,156,0.2); color: #1ABC9C; border: 1px solid #1ABC9C; }
+.duty-desc { font-size: 10px; color: var(--muted); padding: 7px 11px; line-height: 1.5; border-bottom: 1px solid var(--border); font-style: italic; background: rgba(255,255,255,0.02); }
+.position-slot { padding: 9px 11px; min-height: 48px; display: flex; align-items: center; }
+.slot-empty { border: 1.5px dashed var(--border); border-radius: 4px; flex: 1; padding: 7px 9px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 10px; font-family: 'IBM Plex Mono', monospace; cursor: pointer; transition: all 0.15s; min-height: 34px; }
+.slot-empty:hover, .slot-empty.drag-over { border-color: var(--gold); color: var(--gold); background: rgba(212,160,23,0.05); }
+.slot-empty.viewer { cursor: default; }
+.slot-empty.viewer:hover { border-color: var(--border); color: var(--muted); background: transparent; }
+.slot-filled { flex: 1; display: flex; align-items: center; gap: 8px; background: rgba(255,69,0,0.08); border: 1.5px solid rgba(255,69,0,0.3); border-radius: 4px; padding: 5px 9px; }
+.slot-filled.mine { background: rgba(255,69,0,0.15); border-color: var(--fire); }
+.slot-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; color: white; flex-shrink: 0; }
+.slot-name { font-size: 12px; font-weight: 600; flex: 1; }
+.slot-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 2px; transition: color 0.1s; line-height: 1; }
+.slot-remove:hover { color: var(--fire); }
+.duty-btn { background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: 'IBM Plex Mono', monospace; font-size: 9px; padding: 3px 7px; border-radius: 2px; transition: all 0.1s; white-space: nowrap; }
+.duty-btn:hover { border-color: var(--fire); color: var(--fire); }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--panel); border: 2px solid var(--fire); border-radius: 8px; max-width: 440px; width: 100%; padding: 24px; animation: slideUp 0.2s ease; max-height: 90vh; overflow-y: auto; }
+@keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-fire { font-size: 32px; text-align: center; margin-bottom: 10px; }
+.modal-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--fire); text-align: center; }
+.modal-position { text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--gold); margin-top: 4px; }
+.modal-divider { height: 1px; background: var(--border); margin: 14px 0; }
+.modal-section-title { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 2px; color: var(--text); margin-bottom: 8px; }
+.modal-duty-text { font-size: 12px; color: var(--text); line-height: 1.7; background: rgba(255,69,0,0.06); border-left: 3px solid var(--fire); padding: 10px 12px; border-radius: 0 4px 4px 0; }
+.modal-step { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+.modal-step:last-child { border-bottom: none; }
+.step-num { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: var(--fire); min-width: 18px; }
+.modal-close { margin-top: 18px; width: 100%; padding: 11px; background: var(--fire); color: white; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 2px; cursor: pointer; border-radius: 4px; }
+.modal-close:hover { background: var(--fire-dim); }
+
+/* NOTIFICATION TOAST */
+.toast { position: fixed; bottom: 20px; right: 16px; left: 16px; max-width: 360px; margin: 0 auto; background: var(--green-dim); border: 1.5px solid var(--green); color: white; padding: 12px 16px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; z-index: 300; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.alert { background: rgba(255,69,0,0.9); border-color: var(--fire); }
+
+/* LOADING */
+#loadingScreen { position: fixed; inset: 0; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 500; flex-direction: column; gap: 16px; }
+.loading-fire { font-size: 48px; animation: flicker 0.8s infinite alternate; }
+.loading-text { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 2px; }
+
+@media (max-width: 640px) {
+  .app { grid-template-columns: 1fr; }
+  #teamPool { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+  .positions-grid { grid-template-columns: 1fr; }
+  header { gap: 8px; }
+}
 </style>
 </head>
 <body>
 
-<div id="installBanner" style="display:none;background:#1A1A1A;border-bottom:2px solid #FF4500;padding:10px 20px;align-items:center;justify-content:space-between;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#E8E0D0;">
-  <span>🔥 Install this app on your phone for quick access during emergencies</span>
-  <button id="installBtn" style="background:#FF4500;color:white;border:none;padding:7px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;border-radius:2px;">INSTALL APP</button>
+<div id="loadingScreen">
+  <div class="loading-fire">🔥</div>
+  <div class="loading-text">LOADING ROSTER...</div>
 </div>
 
-<header>
-  <div class="header-left">
-    <div class="fire-icon">🔥</div>
-    <div class="header-title">
-      <h1>Fire Evacuation Roster</h1>
-      <p>SECURITY COMMAND — DRAG &amp; DROP ASSIGNMENT</p>
-    </div>
-  </div>
-  <div class="shift-tabs" id="shiftTabs"></div>
-  <div class="header-actions">
-    <button class="btn btn-ghost" onclick="clearShift()">CLEAR SHIFT</button>
-    <button class="btn btn-primary" onclick="openPrintModal()">VIEW ROSTER</button>
-  </div>
-</header>
-
-<div class="app">
-  <aside class="team-pool">
-    <div class="pool-title">TEAM MEMBERS</div>
-    <div class="pool-grid" id="teamPool"></div>
-  </aside>
-
-  <main class="roster-area">
-    <div class="shift-header">
-      <div class="shift-name" id="shiftDisplayName">OPENING SHIFT</div>
-      <div class="shift-time" id="shiftDisplayTime">08:00 – 11:00</div>
-    </div>
-    <div class="coverage-bar">
-      <div class="coverage-label">POSITIONS FILLED</div>
-      <div class="coverage-track"><div class="coverage-fill" id="coverageFill" style="width:0%"></div></div>
-      <div class="coverage-count" id="coverageCount">0 / 0</div>
-    </div>
-    <div id="rosterGrid"></div>
-  </main>
+<div id="installBanner">
+  <span>📲 Install this app on your phone for quick access</span>
+  <button id="installBtn">INSTALL APP</button>
 </div>
 
-<!-- ROLE MODAL -->
-<div class="modal-overlay" id="roleModal">
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-fire">🔥</div>
+    <div class="login-title">Fire Evacuation</div>
+    <div class="login-sub">IUIC LONDON SECURITY COMMAND</div>
+
+    <div id="viewerForm">
+      <div class="login-label">YOUR NAME</div>
+      <input class="login-input" id="viewerName" type="text" placeholder="Enter your name..." autocomplete="off">
+      <button class="login-btn" onclick="loginViewer()">VIEW MY DUTY</button>
+      <div class="login-toggle" onclick="showLeadForm()">I am a Lead Officer →</div>
+    </div>
+
+    <div id="leadForm" style="display:none">
+      <div class="login-label">LEAD NAME</div>
+      <input class="login-input" id="leadName" type="text" placeholder="Your name..." autocomplete="off">
+      <div class="login-label">ACCESS CODE</div>
+      <input class="login-input" id="leadPass" type="password" placeholder="Enter access code...">
+      <button class="login-btn" onclick="loginLead()">LEAD ACCESS</button>
+      <div class="login-toggle" onclick="showViewerForm()">← Back to team member</div>
+    </div>
+
+    <div class="login-error" id="loginError"></div>
+    <hr class="login-divider">
+    <div class="login-verse">"A prudent man foreseeth the evil, and hideth himself." — Proverbs 27:12</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
+  <header>
+    <div class="header-left">
+      <div class="header-fire">🔥</div>
+      <div class="header-title">
+        <h1>Fire Roster</h1>
+        <p><span class="sync-dot" id="syncDot"></span><span id="syncLabel">CONNECTING...</span></p>
+      </div>
+    </div>
+    <div class="shift-tabs" id="shiftTabs"></div>
+    <div class="header-right">
+      <div class="user-badge" id="userBadge"></div>
+      <button class="btn btn-ghost" id="clearBtn" style="display:none" onclick="clearShift()">CLEAR</button>
+      <button class="btn btn-ghost" onclick="logout()">LOGOUT</button>
+    </div>
+  </header>
+
+  <div id="myDutyBanner">
+    <div class="my-duty-label">🔥 YOUR ASSIGNMENT THIS SHIFT</div>
+    <div class="my-duty-position" id="myDutyPosition"></div>
+    <div class="my-duty-desc" id="myDutyDesc"></div>
+  </div>
+
+  <div class="app" id="appLayout">
+    <aside id="teamPool" style="display:none">
+      <div class="pool-title">TEAM</div>
+      <div id="poolGrid"></div>
+    </aside>
+    <main class="roster-area" id="rosterArea">
+      <div class="shift-header">
+        <div class="shift-name" id="shiftDisplayName"></div>
+        <div class="shift-time" id="shiftDisplayTime"></div>
+      </div>
+      <div class="coverage-bar">
+        <div class="coverage-label">POSITIONS FILLED</div>
+        <div class="coverage-track"><div class="coverage-fill" id="coverageFill" style="width:0%"></div></div>
+        <div class="coverage-count" id="coverageCount">0/0</div>
+      </div>
+      <div id="rosterGrid"></div>
+    </main>
+  </div>
+</div>
+
+<!-- DUTY MODAL -->
+<div class="modal-overlay" id="dutyModal">
   <div class="modal">
     <div class="modal-fire">🔥</div>
     <div class="modal-name" id="modalName"></div>
-    <div class="modal-position" id="modalPosition"></div>
+    <div class="modal-position" id="modalPos"></div>
     <div class="modal-divider"></div>
-    <div class="modal-duty-title">YOUR FIRE EVACUATION DUTY</div>
+    <div class="modal-section-title">YOUR DUTY</div>
     <div class="modal-duty-text" id="modalDuty"></div>
-    <div class="modal-steps" id="modalSteps"></div>
-    <button class="modal-close" onclick="closeModal()">UNDERSTOOD — CLOSE</button>
-  </div>
-</div>
-
-<!-- PRINT MODAL -->
-<div class="modal-overlay" id="printModal">
-  <div class="modal print-modal">
-    <div class="modal-name" id="printTitle">SHIFT ROSTER</div>
-    <div class="modal-position" id="printTime"></div>
-    <div class="print-grid" id="printGrid"></div>
-    <button class="modal-close" onclick="closePrintModal()">CLOSE</button>
+    <div id="modalSteps" style="margin-top:14px"></div>
+    <button class="modal-close" onclick="closeModal('dutyModal')">UNDERSTOOD</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script>
-// =====================================================
-// DATA
-// =====================================================
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const TEAM = [
-  'Zuriel','Benaiah','Eber','Nathan Ben','Duel','Mishael','Mark','Ara',
-  'Alphaeus','Euen','Judea','Kassa','Joshua.M','Ithiel','Kal\'el',
-  'Ezekiel','James','Shemuel','Phineus','Alphius','Deuel'
-];
-
-const AVATAR_COLORS = [
-  '#C0392B','#8E44AD','#2980B9','#16A085','#D35400','#7F8C8D',
-  '#1ABC9C','#E74C3C','#9B59B6','#3498DB','#E67E22','#2ECC71',
-  '#E91E63','#795548','#607D8B','#F44336','#4CAF50','#FF5722',
-  '#9C27B0','#03A9F4','#FF9800'
-];
-
-const DUTY_TYPES = {
-  INCIDENT: { label: 'INCIDENT LEAD', cls: 'duty-incident' },
-  ROLLCALL: { label: 'ROLL CALL LEAD', cls: 'duty-rollcall' },
-  ALERT: { label: 'ALERT ROOMS', cls: 'duty-alert' },
-  SEARCH: { label: 'SEARCH & SWEEP', cls: 'duty-search' },
-  GUIDE: { label: 'GUIDE PEOPLE', cls: 'duty-guide' },
-  DOOR: { label: 'DOOR HOLDER', cls: 'duty-door' },
-  TRAFFIC: { label: 'TRAFFIC CONTROL', cls: 'duty-traffic' },
-  CROWD: { label: 'CROWD CONTROL', cls: 'duty-crowd' },
+// ── CONFIG ──────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyALvm9eS74jJN_nTgY5H0aLF-yXX0ZOJDs",
+  authDomain: "fire-roster.firebaseapp.com",
+  projectId: "fire-roster",
+  storageBucket: "fire-roster.firebasestorage.app",
+  messagingSenderId: "121698361097",
+  appId: "1:121698361097:web:ac4426a8ed00b75861fdd8"
 };
 
+const LEAD_CODE = "IUIC2025";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── DATA ─────────────────────────────────────────────
+const TEAM = ['Zuriel','Benaiah','Eber','Nathan Ben','Duel','Mishael','Mark','Ara',
+  'Alphaeus','Euen','Judea','Kassa','Joshua.M','Ithiel',"Kal'el",'Ezekiel','James','Shemuel','Phineus','Alphius','Deuel'];
+
+const AVATAR_COLORS = ['#C0392B','#8E44AD','#2980B9','#16A085','#D35400','#7F8C8D','#1ABC9C','#E74C3C','#9B59B6','#3498DB','#E67E22','#2ECC71','#E91E63','#795548','#607D8B','#F44336','#4CAF50','#FF5722','#9C27B0','#03A9F4','#FF9800'];
+
+const DUTY_LABELS = { INCIDENT:'INCIDENT LEAD', ROLLCALL:'ROLL CALL LEAD', ALERT:'ALERT ROOMS', SEARCH:'SEARCH & SWEEP', GUIDE:'GUIDE PEOPLE', DOOR:'DOOR HOLDER', TRAFFIC:'TRAFFIC CONTROL', CROWD:'CROWD CONTROL' };
+
 const ROLE_STEPS = {
-  INCIDENT: ['Sound the alarm immediately.','Call 999. Give building name, address & contact number.','Record time alarm was raised.','Liaise with Fire Service on arrival — you speak to them first.','Do not re-enter until Fire Service confirms safe.'],
+  INCIDENT: ['Sound the alarm immediately.','Call 999 — give building name, address & contact number.','Record the time the alarm was raised.','Liaise with Fire Service on arrival — you speak to them first.','Do NOT re-enter until Fire Service confirms safe.'],
   ROLLCALL: ['Go STRAIGHT to the assembly point across the street.','Use the tablet to tick off every name on the register.','Report any missing persons to HOS (Zuriel) immediately.','Remain at assembly point until HOS says otherwise.'],
-  ALERT: ['Run immediately upstairs to the Kids Room, Prep Room & Nursing Room.','Shout clearly: "FIRE — LEAVE NOW."','Check no one is in the toilet areas upstairs.','Monitor cameras for stragglers if at SCB position.','Confirm all rooms clear to HOS via radio.'],
+  ALERT: ['Run immediately to the Kids Room, Prep Room & Nursing Room upstairs.','Shout clearly: "FIRE — LEAVE NOW."','Check no one is in the toilet areas upstairs.','Monitor cameras for stragglers if at SCB position.','Confirm all rooms clear to HOS via radio.'],
   SEARCH: ['Search ALL rooms, corridors and toilets in your assigned zone.','Shout "FIRE — LEAVE NOW" in each room.','Close doors behind you — slows fire spread.','Report zone clear to HOS via radio.','Do NOT search if unsafe — exit immediately.'],
   GUIDE: ['Stand at your assigned door or partition.','Use calm, firm instructions: "This way please — stay calm."','Keep people moving — no stopping.','Ensure all persons pass through before you exit.','Close door behind you.'],
-  DOOR: ['Go to your assigned fire door immediately.','Hold the door open throughout the full evacuation.','Do NOT leave this post until all persons have passed through.','Confirm area clear, then exit and close door.'],
+  DOOR: ['Go to your assigned fire door immediately.','Hold the door OPEN throughout the full evacuation.','Do NOT leave this post until all persons have passed through.','Confirm area clear, then exit and close door behind you.'],
   TRAFFIC: ['Go directly to the road crossing outside.','Stop traffic from both directions.','Guide the congregation safely across to the assembly point.','Remain at crossing until everyone is across.'],
-  CROWD: ['Manage congestion at exits — keep people moving.','Prevent pushing — use assertive but calm language.','Assist elderly, wheelchair users and children to exit first.','Confirm area clear to HOS.'],
+  CROWD: ['Manage congestion at exits — keep people moving.','Prevent pushing — use assertive but calm language.','Assist elderly, wheelchair users and children to exit first.','Confirm area clear to HOS via radio.'],
 };
 
 const POSITIONS = [
-  // Zone: Command
-  { zone: 'COMMAND', id: 'hos', title: 'HOS — Head of Security', duty: 'INCIDENT LEAD — Sound the alarm, call 999, record time, liaise with Fire Service on arrival', type: 'INCIDENT', default: 'Zuriel' },
-  { zone: 'COMMAND', id: 'ahos', title: 'AHOS — Asst. Head of Security', duty: 'ROLL CALL LEAD — Take tablet to assembly point, conduct headcount, report to HOS', type: 'ROLLCALL', default: 'Benaiah' },
-
-  // Zone: SCB
-  { zone: 'SCB ROOM', id: 'scb_camera', title: 'SCB Camera Operator', duty: 'ALERT FIRE / KIDS ROOM — Alert upstairs rooms, monitor cameras for stragglers', type: 'ALERT', default: 'Eber' },
-  { zone: 'SCB ROOM', id: 'scb_admin', title: 'SCB Admin / Radio', duty: 'ALERT FIRE / KIDS ROOM — Assist camera operator, relay messages via radio', type: 'ALERT', default: 'Nathan Ben' },
-
-  // Zone: Black Door
-  { zone: 'BLACK DOOR', id: 'bd_overseer', title: 'Black Door Overseer', duty: 'GUIDE congregation via Main Hall exit — direct people to assembly point across street', type: 'GUIDE', default: 'Duel' },
-  { zone: 'BLACK DOOR', id: 'bd_register', title: 'Black Door Register', duty: 'SEARCH & SWEEP — Check Black Door zone, corridors, and report area clear', type: 'SEARCH', default: 'Mishael' },
-
-  // Zone: Search
-  { zone: 'SEARCH TEAM', id: 'search1', title: 'Search Officer (Partition)', duty: 'DIRECTS PARTITION — Guide people through partition door, ensure calm orderly flow', type: 'GUIDE', default: 'Mark' },
-  { zone: 'SEARCH TEAM', id: 'search2', title: 'Search Officer (Families)', duty: 'DIRECTS FAMILY TO BD — Guide families and children to Black Door exit safely', type: 'GUIDE', default: 'Ara' },
-
-  // Zone: White Door
-  { zone: 'WHITE DOOR', id: 'wd_overseer', title: 'White Door Overseer', duty: 'WHITE DOOR HOLDER — Control White Door exit, guide congregation out, sweep zone', type: 'DOOR', default: 'Alphaeus' },
-  { zone: 'WHITE DOOR', id: 'wd_post1', title: 'White Door Post 1 (Upstairs)', duty: 'KIDS ROOM / PREP ROOM — Clear kids room and prep room, assist vulnerable persons', type: 'ALERT', default: 'Euen' },
-
-  // Zone: Main Hall
-  { zone: 'MAIN HALL', id: 'mh_overseer', title: 'Main Hall Overseer', duty: 'MAIN HALL OVERSEER — Manage evacuation flow from main hall, ensure all seats cleared', type: 'CROWD', default: 'Judea' },
-  { zone: 'MAIN HALL', id: 'mh_post1', title: 'Main Hall Post 1', duty: '2ND FIRE DOOR HOLDER — Hold fire door open, guide people through, confirm area clear', type: 'DOOR', default: 'Kassa' },
-  { zone: 'MAIN HALL', id: 'mh_post2', title: 'Main Hall Post 2', duty: '1ST FIRE DOOR HOLDER — Open and hold first fire door throughout evacuation', type: 'DOOR', default: '' },
-  { zone: 'MAIN HALL', id: 'mh_post3', title: 'Main Hall Post 3 (Assist)', duty: 'ASSIST OVERSEER — Support main hall overseer, guide overflow areas', type: 'CROWD', default: '' },
-
-  // Zone: External
-  { zone: 'EXTERNAL', id: 'traffic', title: 'Traffic / Witness Control', duty: 'TRAFFIC CONTROL — Manage road crossing, guide congregation to assembly point safely', type: 'TRAFFIC', default: 'Joshua.M' },
-  { zone: 'EXTERNAL', id: 'fire_escape', title: 'Fire Escape (Brown Door)', duty: 'OPEN FIRE ESCAPE DOOR — Open brown escape door, guide occupants out and to street', type: 'DOOR', default: 'Ithiel' },
+  { zone:'COMMAND', id:'hos', title:'HOS — Head of Security', duty:'INCIDENT LEAD — Sound the alarm, call 999, record time, liaise with Fire Service on arrival', type:'INCIDENT', default:'Zuriel' },
+  { zone:'COMMAND', id:'ahos', title:'AHOS — Asst. Head of Security', duty:'ROLL CALL LEAD — Take tablet to assembly point, conduct headcount, report to HOS', type:'ROLLCALL', default:'Benaiah' },
+  { zone:'SCB ROOM', id:'scb_cam', title:'SCB Camera Operator', duty:'ALERT FIRE / KIDS ROOM — Alert upstairs rooms, monitor cameras for stragglers', type:'ALERT', default:'Eber' },
+  { zone:'SCB ROOM', id:'scb_admin', title:'SCB Admin / Radio', duty:'ALERT FIRE / KIDS ROOM — Assist camera operator, relay messages via radio', type:'ALERT', default:'Nathan Ben' },
+  { zone:'BLACK DOOR', id:'bd_over', title:'Black Door Overseer', duty:'GUIDE congregation via Main Hall exit — direct people to assembly point across street', type:'GUIDE', default:'Duel' },
+  { zone:'BLACK DOOR', id:'bd_reg', title:'Black Door Register', duty:'SEARCH & SWEEP — Check Black Door zone, corridors, and report area clear', type:'SEARCH', default:'Mishael' },
+  { zone:'SEARCH TEAM', id:'search1', title:'Search Officer (Partition)', duty:'DIRECTS PARTITION — Guide people through partition door, ensure calm orderly flow', type:'GUIDE', default:'Mark' },
+  { zone:'SEARCH TEAM', id:'search2', title:'Search Officer (Families)', duty:'DIRECTS FAMILY TO BD — Guide families and children to Black Door exit safely', type:'GUIDE', default:'Ara' },
+  { zone:'WHITE DOOR', id:'wd_over', title:'White Door Overseer', duty:'WHITE DOOR HOLDER — Control White Door exit, guide congregation out, sweep zone', type:'DOOR', default:'Alphaeus' },
+  { zone:'WHITE DOOR', id:'wd_post1', title:'White Door Post 1 (Upstairs)', duty:'KIDS ROOM / PREP ROOM — Clear kids room and prep room, assist vulnerable persons', type:'ALERT', default:'Euen' },
+  { zone:'MAIN HALL', id:'mh_over', title:'Main Hall Overseer', duty:'MAIN HALL OVERSEER — Manage evacuation flow from main hall, ensure all seats cleared', type:'CROWD', default:'Judea' },
+  { zone:'MAIN HALL', id:'mh_post1', title:'Main Hall Post 1', duty:'2ND FIRE DOOR HOLDER — Hold fire door open, guide people through, confirm area clear', type:'DOOR', default:'Kassa' },
+  { zone:'MAIN HALL', id:'mh_post2', title:'Main Hall Post 2', duty:'1ST FIRE DOOR HOLDER — Open and hold first fire door throughout evacuation', type:'DOOR', default:'' },
+  { zone:'MAIN HALL', id:'mh_post3', title:'Main Hall Post 3 (Assist)', duty:'ASSIST OVERSEER — Support main hall overseer, guide overflow areas', type:'CROWD', default:'' },
+  { zone:'EXTERNAL', id:'traffic', title:'Traffic / Witness Control', duty:'TRAFFIC CONTROL — Manage road crossing, guide congregation to assembly point safely', type:'TRAFFIC', default:'Joshua.M' },
+  { zone:'EXTERNAL', id:'escape', title:'Fire Escape (Brown Door)', duty:'OPEN FIRE ESCAPE DOOR — Open brown escape door, guide occupants out and to street', type:'DOOR', default:'Ithiel' },
 ];
 
 const SHIFTS = [
-  { id: 'opening', name: 'OPENING', time: '08:00 – 11:00' },
-  { id: 'morning', name: 'MORNING', time: '11:00 – 15:00' },
-  { id: 'afternoon', name: 'AFTERNOON', time: '15:00 – 19:00' },
-  { id: 'evening', name: 'EVENING', time: '19:00 – 23:00' },
+  { id:'opening', name:'OPENING', time:'08:00 – 11:00' },
+  { id:'morning', name:'MORNING', time:'11:00 – 15:00' },
+  { id:'afternoon', name:'AFTERNOON', time:'15:00 – 19:00' },
+  { id:'evening', name:'EVENING', time:'19:00 – 23:00' },
 ];
 
-// =====================================================
-// STATE
-// =====================================================
+// ── STATE ─────────────────────────────────────────────
 let currentShift = 'opening';
-let assignments = {}; // { shiftId: { positionId: memberName } }
+let assignments = {};  // { shiftId: { posId: name } }
+let currentUser = null; // { name, isLead }
 let dragSource = null;
+let unsubscribe = null;
+let lastSavedJSON = '';
 
 SHIFTS.forEach(s => { assignments[s.id] = {}; });
+POSITIONS.forEach(p => { if (p.default) SHIFTS.forEach(s => { assignments[s.id][p.id] = p.default; }); });
 
-// Prefill with defaults
-POSITIONS.forEach(pos => {
-  if (pos.default) {
-    SHIFTS.forEach(s => { assignments[s.id][pos.id] = pos.default; });
-  }
-});
-
-// =====================================================
-// HELPERS
-// =====================================================
-function getAvatarColor(name) {
-  let hash = 0;
-  for (let c of name) hash = c.charCodeAt(0) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+// ── HELPERS ───────────────────────────────────────────
+function avatarColor(name) {
+  let h = 0; for (let c of name) h = c.charCodeAt(0) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
+function initials(name) { return name.split(/[\s.]+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function getAssigned(posId) { return assignments[currentShift]?.[posId] || null; }
+function isAssigned(name) { return Object.values(assignments[currentShift]||{}).includes(name); }
 
-function initials(name) {
-  return name.split(/[\s.]+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
-
-function getDutyType(type) {
-  return DUTY_TYPES[type] || { label: 'DUTY', cls: 'duty-guide' };
-}
-
-function getAssigned(posId) {
-  return assignments[currentShift][posId] || null;
-}
-
-function setAssigned(posId, name) {
-  // Remove from any other position in this shift
-  Object.keys(assignments[currentShift]).forEach(k => {
-    if (assignments[currentShift][k] === name) delete assignments[currentShift][k];
-  });
-  assignments[currentShift][posId] = name;
-}
-
-function removeAssigned(posId) {
-  delete assignments[currentShift][posId];
-}
-
-function isAssigned(name) {
-  return Object.values(assignments[currentShift]).includes(name);
-}
-
-function showToast(msg) {
+function showToast(msg, type='') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  t.textContent = msg; t.className = 'toast show' + (type ? ' '+type : '');
+  setTimeout(() => t.className = 'toast', 3000);
 }
 
-// =====================================================
-// RENDER
-// =====================================================
-function renderShiftTabs() {
-  const el = document.getElementById('shiftTabs');
-  el.innerHTML = SHIFTS.map(s => `
-    <button class="shift-tab ${s.id === currentShift ? 'active' : ''}" onclick="switchShift('${s.id}')">
-      ${s.name}
-    </button>
-  `).join('');
+function setSyncStatus(status) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  if (status === 'live') { dot.className='sync-dot live'; lbl.textContent='LIVE'; }
+  else if (status === 'saving') { dot.className='sync-dot saving'; lbl.textContent='SAVING...'; }
+  else { dot.className='sync-dot'; lbl.textContent='OFFLINE'; }
 }
 
-function renderTeamPool() {
-  const el = document.getElementById('teamPool');
-  el.innerHTML = TEAM.map(name => {
+// ── FIREBASE SYNC ─────────────────────────────────────
+async function saveToFirebase() {
+  const json = JSON.stringify(assignments);
+  if (json === lastSavedJSON) return;
+  setSyncStatus('saving');
+  try {
+    await setDoc(doc(db, 'roster', 'assignments'), { data: json, updatedAt: Date.now(), updatedBy: currentUser?.name || 'Unknown' });
+    lastSavedJSON = json;
+    setSyncStatus('live');
+  } catch(e) { setSyncStatus('offline'); showToast('Save failed — check connection', 'alert'); }
+}
+
+function startListening() {
+  if (unsubscribe) unsubscribe();
+  unsubscribe = onSnapshot(doc(db, 'roster', 'assignments'), (snap) => {
+    setSyncStatus('live');
+    if (snap.exists()) {
+      const remote = snap.data();
+      const remoteJSON = remote.data;
+      if (remoteJSON !== lastSavedJSON) {
+        try {
+          const parsed = JSON.parse(remoteJSON);
+          // Merge — keep all shifts
+          SHIFTS.forEach(s => { if (parsed[s.id]) assignments[s.id] = parsed[s.id]; });
+          lastSavedJSON = remoteJSON;
+          renderAll();
+          if (currentUser && !currentUser.isLead && remote.updatedBy && remote.updatedBy !== currentUser.name) {
+            showToast(`🔥 Roster updated by ${remote.updatedBy}`, 'alert');
+          }
+        } catch(e) {}
+      }
+    }
+    document.getElementById('loadingScreen').style.display = 'none';
+  }, (err) => {
+    setSyncStatus('offline');
+    document.getElementById('loadingScreen').style.display = 'none';
+  });
+}
+
+// ── LOGIN ─────────────────────────────────────────────
+window.showLeadForm = () => {
+  document.getElementById('viewerForm').style.display = 'none';
+  document.getElementById('leadForm').style.display = 'block';
+  document.getElementById('loginError').textContent = '';
+};
+window.showViewerForm = () => {
+  document.getElementById('leadForm').style.display = 'none';
+  document.getElementById('viewerForm').style.display = 'block';
+  document.getElementById('loginError').textContent = '';
+};
+
+window.loginViewer = () => {
+  const name = document.getElementById('viewerName').value.trim();
+  if (!name) { document.getElementById('loginError').textContent = 'Please enter your name.'; return; }
+  currentUser = { name, isLead: false };
+  enterApp();
+};
+
+window.loginLead = () => {
+  const name = document.getElementById('leadName').value.trim();
+  const pass = document.getElementById('leadPass').value.trim();
+  if (!name) { document.getElementById('loginError').textContent = 'Please enter your name.'; return; }
+  if (pass !== LEAD_CODE) { document.getElementById('loginError').textContent = 'Incorrect access code.'; return; }
+  currentUser = { name, isLead: true };
+  enterApp();
+};
+
+function enterApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('loadingScreen').style.display = 'flex';
+
+  const badge = document.getElementById('userBadge');
+  badge.textContent = currentUser.isLead ? `⚡ ${currentUser.name} — LEAD` : `👁 ${currentUser.name}`;
+  badge.className = 'user-badge' + (currentUser.isLead ? ' lead' : '');
+
+  if (currentUser.isLead) {
+    document.getElementById('teamPool').style.display = 'block';
+    document.getElementById('clearBtn').style.display = 'inline-block';
+  } else {
+    document.getElementById('teamPool').style.display = 'none';
+    document.getElementById('clearBtn').style.display = 'none';
+    document.getElementById('rosterArea').classList.add('full-width');
+    document.getElementById('myDutyBanner').style.display = 'block';
+  }
+
+  startListening();
+  renderAll();
+}
+
+window.logout = () => {
+  if (unsubscribe) unsubscribe();
+  currentUser = null;
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('viewerName').value = '';
+  document.getElementById('leadName').value = '';
+  document.getElementById('leadPass').value = '';
+  document.getElementById('loginError').textContent = '';
+  showViewerForm();
+};
+
+// ── RENDER ────────────────────────────────────────────
+function renderAll() {
+  renderTabs();
+  renderPool();
+  renderRoster();
+  renderMyDuty();
+}
+
+function renderTabs() {
+  document.getElementById('shiftTabs').innerHTML = SHIFTS.map(s =>
+    `<button class="shift-tab ${s.id===currentShift?'active':''}" onclick="switchShift('${s.id}')">${s.name}</button>`
+  ).join('');
+}
+
+function renderPool() {
+  if (!currentUser?.isLead) return;
+  document.getElementById('poolGrid').innerHTML = TEAM.map(name => {
     const assigned = isAssigned(name);
-    const color = getAvatarColor(name);
-    return `
-      <div class="member-chip ${assigned ? 'assigned' : ''}" 
-           draggable="${!assigned}" 
-           data-name="${name}"
-           ondragstart="onDragStart(event, '${name}')"
-           title="${assigned ? 'Already assigned this shift' : 'Drag to assign'}">
-        <div class="member-avatar" style="background:${color}">${initials(name)}</div>
-        <div>
-          <div class="member-name">${name}</div>
-          <div class="member-count">${assigned ? '✓ ASSIGNED' : 'AVAILABLE'}</div>
-        </div>
-      </div>
-    `;
+    return `<div class="member-chip ${assigned?'assigned':''}" draggable="${!assigned}" data-name="${name}"
+      ondragstart="onDragStart(event,'${name}')">
+      <div class="member-avatar" style="background:${avatarColor(name)}">${initials(name)}</div>
+      <div><div class="member-name">${name}</div><div class="member-status">${assigned?'✓ ON DUTY':'AVAILABLE'}</div></div>
+    </div>`;
   }).join('');
+}
+
+function renderMyDuty() {
+  if (!currentUser || currentUser.isLead) return;
+  const name = currentUser.name;
+  let found = null;
+  POSITIONS.forEach(pos => { if (getAssigned(pos.id) === name) found = pos; });
+  const banner = document.getElementById('myDutyBanner');
+  if (found) {
+    document.getElementById('myDutyPosition').textContent = found.title;
+    document.getElementById('myDutyDesc').textContent = found.duty;
+    banner.style.display = 'block';
+  } else {
+    document.getElementById('myDutyPosition').textContent = '';
+    document.getElementById('myDutyDesc').innerHTML = '<span class="my-duty-none">You are not yet assigned to a position for this shift. Check back when the Lead updates the roster.</span>';
+  }
 }
 
 function renderRoster() {
@@ -862,206 +567,137 @@ function renderRoster() {
   document.getElementById('shiftDisplayName').textContent = shift.name + ' SHIFT';
   document.getElementById('shiftDisplayTime').textContent = shift.time;
 
-  const filled = Object.keys(assignments[currentShift]).length;
+  const filled = Object.keys(assignments[currentShift]||{}).length;
   const total = POSITIONS.length;
-  const pct = Math.round((filled / total) * 100);
-  document.getElementById('coverageFill').style.width = pct + '%';
-  document.getElementById('coverageCount').textContent = `${filled} / ${total}`;
+  document.getElementById('coverageFill').style.width = Math.round((filled/total)*100) + '%';
+  document.getElementById('coverageCount').textContent = `${filled}/${total}`;
 
   const zones = [...new Set(POSITIONS.map(p => p.zone))];
-  const grid = document.getElementById('rosterGrid');
-
-  grid.innerHTML = zones.map(zone => {
-    const zonePosts = POSITIONS.filter(p => p.zone === zone);
-    return `
-      <div class="zone-section">
-        <div class="zone-label">${zone}</div>
-        <div class="positions-grid">
-          ${zonePosts.map(pos => renderPositionCard(pos)).join('')}
-        </div>
-      </div>
-    `;
+  document.getElementById('rosterGrid').innerHTML = zones.map(zone => {
+    const posts = POSITIONS.filter(p => p.zone === zone);
+    return `<div class="zone-section">
+      <div class="zone-label">${zone}</div>
+      <div class="positions-grid">${posts.map(pos => renderCard(pos)).join('')}</div>
+    </div>`;
   }).join('');
 
-  // Attach drag events
-  document.querySelectorAll('.slot-empty, .slot-filled').forEach(el => {
-    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
-    el.addEventListener('dragleave', e => el.classList.remove('drag-over'));
-    el.addEventListener('drop', e => onDrop(e, el.closest('.position-card').dataset.posid));
+  // Attach drop events to cards
+  document.querySelectorAll('.position-card').forEach(card => {
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => { e.preventDefault(); card.classList.remove('drag-over'); onDrop(card.dataset.posid); });
   });
 }
 
-function renderPositionCard(pos) {
+function renderCard(pos) {
   const assigned = getAssigned(pos.id);
-  const duty = getDutyType(pos.type);
+  const isLead = currentUser?.isLead;
+  const isMe = assigned && currentUser && assigned.toLowerCase() === currentUser.name.toLowerCase();
+  const dutyLabel = DUTY_LABELS[pos.type] || pos.type;
 
-  const slotContent = assigned ? `
-    <div class="slot-filled">
-      <div class="slot-avatar" style="background:${getAvatarColor(assigned)}">${initials(assigned)}</div>
-      <div class="slot-name">${assigned}</div>
-      <button class="slot-remove" onclick="removeAndRefresh('${pos.id}')" title="Remove">×</button>
-      <button class="btn btn-ghost" style="padding:4px 8px;font-size:10px;margin-left:4px;" onclick="openRoleModal('${assigned}','${pos.id}')">DUTY</button>
+  const slotContent = assigned
+    ? `<div class="slot-filled ${isMe?'mine':''}">
+        <div class="slot-avatar" style="background:${avatarColor(assigned)}">${initials(assigned)}</div>
+        <div class="slot-name">${assigned}${isMe?' ★':''}</div>
+        ${isLead ? `<button class="slot-remove" onclick="removePos('${pos.id}')">×</button>` : ''}
+        <button class="duty-btn" onclick="openDutyModal('${assigned}','${pos.id}')">DUTY</button>
+      </div>`
+    : `<div class="slot-empty ${isLead?'':'viewer'}" ${isLead?`onclick="clickAssign('${pos.id}')"`:''}>
+        ${isLead ? '+ ASSIGN' : 'UNASSIGNED'}
+      </div>`;
+
+  return `<div class="position-card ${isMe?'mine':''}" data-posid="${pos.id}">
+    <div class="position-header">
+      <div class="position-title">${pos.title}</div>
+      <div class="duty-badge duty-${pos.type}">${dutyLabel}</div>
     </div>
-  ` : `
-    <div class="slot-empty" onclick="openAssignModal('${pos.id}')">
-      + ASSIGN PERSON
-    </div>
-  `;
-
-  return `
-    <div class="position-card" data-posid="${pos.id}" 
-         ondragover="event.preventDefault(); this.classList.add('drag-over')"
-         ondragleave="this.classList.remove('drag-over')"
-         ondrop="onDrop(event, '${pos.id}')">
-      <div class="position-header">
-        <div class="position-title">${pos.title}</div>
-        <div class="duty-badge ${duty.cls}">${duty.label}</div>
-      </div>
-      <div class="duty-desc">${pos.duty}</div>
-      <div class="position-slot">${slotContent}</div>
-    </div>
-  `;
+    <div class="duty-desc">${pos.duty}</div>
+    <div class="position-slot">${slotContent}</div>
+  </div>`;
 }
 
-// =====================================================
-// INTERACTIONS
-// =====================================================
-function switchShift(id) {
-  currentShift = id;
-  renderAll();
-}
+// ── INTERACTIONS ──────────────────────────────────────
+window.switchShift = (id) => { currentShift = id; renderAll(); };
 
-function renderAll() {
-  renderShiftTabs();
-  renderTeamPool();
-  renderRoster();
-}
+window.onDragStart = (e, name) => { dragSource = name; e.dataTransfer.effectAllowed = 'move'; };
 
-function removeAndRefresh(posId) {
-  removeAssigned(posId);
-  renderAll();
-  showToast('Person removed from position.');
-}
-
-function clearShift() {
-  if (confirm('Clear all assignments for this shift?')) {
-    assignments[currentShift] = {};
-    renderAll();
-    showToast('Shift cleared.');
-  }
-}
-
-// Drag & drop
-function onDragStart(e, name) {
-  dragSource = name;
-  e.dataTransfer.effectAllowed = 'move';
-}
-
-function onDrop(e, posId) {
-  e.preventDefault();
-  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-  if (!dragSource) return;
-  setAssigned(posId, dragSource);
+function onDrop(posId) {
+  if (!dragSource || !currentUser?.isLead) return;
+  // Remove from other positions in this shift
+  Object.keys(assignments[currentShift]).forEach(k => { if (assignments[currentShift][k] === dragSource) delete assignments[currentShift][k]; });
+  assignments[currentShift][posId] = dragSource;
   dragSource = null;
   renderAll();
-  showToast(`Assigned successfully.`);
+  saveToFirebase();
+  showToast('✓ Assignment saved and synced');
 }
 
-// Click to assign (fallback / quick assign)
-function openAssignModal(posId) {
-  // Show unassigned team members as a quick pick
+window.removePos = (posId) => {
+  delete assignments[currentShift][posId];
+  renderAll();
+  saveToFirebase();
+};
+
+window.clearShift = () => {
+  if (!confirm('Clear all assignments for this shift?')) return;
+  assignments[currentShift] = {};
+  renderAll();
+  saveToFirebase();
+  showToast('Shift cleared');
+};
+
+window.clickAssign = (posId) => {
   const available = TEAM.filter(n => !isAssigned(n));
-  if (available.length === 0) { showToast('All team members are assigned.'); return; }
+  if (!available.length) { showToast('All team members are assigned'); return; }
   const pos = POSITIONS.find(p => p.id === posId);
-  const name = prompt(`Assign to "${pos.title}".\n\nAvailable: ${available.join(', ')}\n\nType name:`);
-  if (name && TEAM.find(n => n.toLowerCase() === name.toLowerCase())) {
-    const matched = TEAM.find(n => n.toLowerCase() === name.toLowerCase());
-    setAssigned(posId, matched);
-    renderAll();
-    showToast(`${matched} assigned.`);
-  } else if (name) {
-    showToast('Name not found. Check spelling.');
-  }
-}
+  const name = prompt(`Assign to "${pos.title}"\n\nAvailable:\n${available.join(', ')}\n\nType name:`);
+  if (!name) return;
+  const matched = TEAM.find(n => n.toLowerCase() === name.toLowerCase());
+  if (!matched) { showToast('Name not found — check spelling'); return; }
+  Object.keys(assignments[currentShift]).forEach(k => { if (assignments[currentShift][k] === matched) delete assignments[currentShift][k]; });
+  assignments[currentShift][posId] = matched;
+  renderAll();
+  saveToFirebase();
+  showToast(`${matched} assigned`);
+};
 
-// Role modal
-function openRoleModal(name, posId) {
+// ── DUTY MODAL ────────────────────────────────────────
+window.openDutyModal = (name, posId) => {
   const pos = POSITIONS.find(p => p.id === posId);
   const steps = ROLE_STEPS[pos.type] || [];
   document.getElementById('modalName').textContent = name.toUpperCase();
-  document.getElementById('modalPosition').textContent = pos.title + ' — ' + SHIFTS.find(s => s.id === currentShift).name + ' SHIFT';
+  document.getElementById('modalPos').textContent = pos.title + ' — ' + SHIFTS.find(s=>s.id===currentShift).name + ' SHIFT';
   document.getElementById('modalDuty').textContent = pos.duty;
-  document.getElementById('modalSteps').innerHTML = steps.length ? `
-    <div class="modal-duty-title" style="margin-top:16px">STEP BY STEP — WHAT YOU DO</div>
-    ${steps.map((s, i) => `<div class="modal-step"><span class="step-num">${i+1}.</span><span>${s}</span></div>`).join('')}
-  ` : '';
-  document.getElementById('roleModal').classList.add('open');
-}
+  document.getElementById('modalSteps').innerHTML = steps.length
+    ? `<div class="modal-section-title">STEP BY STEP</div>${steps.map((s,i)=>`<div class="modal-step"><span class="step-num">${i+1}.</span><span>${s}</span></div>`).join('')}`
+    : '';
+  document.getElementById('dutyModal').classList.add('open');
+};
 
-function closeModal() {
-  document.getElementById('roleModal').classList.remove('open');
-}
+window.closeModal = (id) => document.getElementById(id).classList.remove('open');
+document.getElementById('dutyModal').addEventListener('click', function(e) { if(e.target===this) closeModal('dutyModal'); });
 
-// Print modal
-function openPrintModal() {
-  const shift = SHIFTS.find(s => s.id === currentShift);
-  document.getElementById('printTitle').textContent = shift.name + ' SHIFT ROSTER';
-  document.getElementById('printTime').textContent = shift.time;
-  const grid = document.getElementById('printGrid');
-  grid.innerHTML = POSITIONS.map(pos => {
-    const assigned = getAssigned(pos.id) || '— UNASSIGNED —';
-    const duty = getDutyType(pos.type);
-    return `
-      <div class="print-row">
-        <div class="print-pos">${pos.zone} · ${pos.title}</div>
-        <div class="print-person">${assigned}</div>
-        <div class="print-duty">${duty.label}</div>
-      </div>
-    `;
-  }).join('');
-  document.getElementById('printModal').classList.add('open');
-}
-
-function closePrintModal() {
-  document.getElementById('printModal').classList.remove('open');
-}
-
-// Close modals on overlay click
-document.getElementById('roleModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-document.getElementById('printModal').addEventListener('click', function(e) {
-  if (e.target === this) closePrintModal();
-});
-
-// =====================================================
-// INIT
-// =====================================================
-renderAll();
-
-// Register service worker for PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
-}
-
-// PWA install prompt
+// ── PWA INSTALL ───────────────────────────────────────
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const banner = document.getElementById('installBanner');
-  if (banner) banner.style.display = 'flex';
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('installBanner').style.display = 'flex';
 });
-document.getElementById('installBtn') && document.getElementById('installBtn').addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    document.getElementById('installBanner').style.display = 'none';
-  }
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBanner').style.display = 'none';
 });
+
+// ── SERVICE WORKER ────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+// Hide loading after short delay if Firebase is slow
+setTimeout(() => { document.getElementById('loadingScreen').style.display = 'none'; }, 4000);
 </script>
 </body>
 </html>
